@@ -6,27 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Book extends Model
 {
-    // THÊM DÒNG NÀY: Mở khóa quyền lưu dữ liệu hàng loạt cho các cột trong bảng books
-    protected $fillable = [
-        'title', 
-        'slug', // BỔ SUNG: Mở khóa quyền ghi dữ liệu cho cột slug
-        'author', 
-        'category_id', 
-        'price', 
-        'stock', 
-        'image_url', 
-        'description'
-    ];
+    // Đảm bảo dòng này đã được lưu để bẻ khóa hoàn toàn quyền nạp ID từ Seeder
+    protected $guarded = [];
 
-    // Mối quan hệ với bảng reviews mà chúng ta đã làm ở bước trước
-    public function reviews()
-    {
-        return $this->hasMany(Review::class);
-    }
-
-    public function orders()
-    {
-        // Sử dụng chính bảng order_items làm cầu nối Nhiều - Nhiều giữa Sách và Đơn hàng
-        return $this->belongsToMany(Order::class, 'order_items', 'book_id', 'order_id');
-    }
+    public function reviews() { return $this->hasMany(Review::class); }
+    public function orders() { return $this->belongsToMany(Order::class, 'order_items', 'book_id', 'order_id'); }
 }

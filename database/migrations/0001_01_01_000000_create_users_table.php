@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -15,15 +18,18 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             
-            // Chỉ định nghĩa cột role 1 lần duy nhất ở đây!
-            $table->enum('role', ['admin', 'customer'])->default('customer');
-            $table->enum('status', ['active', 'blocked'])->default('active');
+            // FIX DATA TRUNCATED: Chuyển sang string kèm default là 'user' để linh hoạt dữ liệu
+            $table->string('role')->default('user');
+            $table->string('status')->default('active');
             
             $table->rememberToken();
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('users');
