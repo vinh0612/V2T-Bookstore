@@ -176,7 +176,7 @@
             <div class="detail-info-card" style="margin-bottom: 16px;">
                 @auth
                     @if($hasPurchased)
-                        <form action="{{ route('reviews.store', $book->id) }}" method="POST">
+                        <form action="{{ route('books.review.store', $book->id) }}" method="POST">
                             @csrf
                             <h3 style="font-size: 0.875rem; font-weight: 700; color: #374151; margin-bottom: 12px;">💬 Chia sẻ cảm nhận của bạn</h3>
 

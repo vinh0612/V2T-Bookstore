@@ -2,48 +2,61 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BookController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\ShopController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\UserHomeController;
+use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\ChangePasswordController;
+use App\Http\Controllers\UserReviewController;
+use App\Http\Controllers\UserWishlistController;
+use App\Http\Controllers\AdminVoucherController;
 
 // 1. Công khai
-Route::get('/', [HomeController::class, 'index']);
-Route::get('/home', [HomeController::class, 'index']);
-Route::get('/shop', [BookController::class, 'index'])->name('shop.index');
-Route::get('/book/{id}', [BookController::class, 'show'])->name('book.show');
-Route::get('/wishlist', [\App\Http\Controllers\WishlistController::class, 'index'])->name('wishlist.index');
-Route::post('/wishlist/toggle/{id}', [\App\Http\Controllers\WishlistController::class, 'toggle'])->name('wishlist.toggle');
+Route::get('/', [UserHomeController::class, 'index'])->name('home');
+Route::get('/home', [UserHomeController::class, 'index']);
+Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
+Route::get('/book/{id}', [ShopController::class, 'show'])->name('books.show');
 
-// 2. Auth (Login/Register)
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegister']);
-Route::post('/register', [AuthController::class, 'register']);
+// Luồng Đăng nhập
+Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
 
+// Luồng Đăng ký
+Route::get('/register', [RegisterController::class, 'showRegister'])->name('register');
+Route::post('/register', [RegisterController::class, 'register']);
+
+// Luồng Đăng xuất
+Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 // 3. Nhóm yêu cầu Đăng nhập (User)
 Route::middleware('auth')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
-    Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
-
+    // Quản lý hồ sơ cá nhân
+    Route::get('/profile', [UserProfileController::class, 'index'])->name('profile');
+    Route::put('/profile/update', [UserProfileController::class, 'update'])->name('profile.update');
+    
+    // Đổi mật khẩu độc lập
+    Route::put('/profile/change-password', [ChangePasswordController::class, 'update'])->name('profile.password.update');
     // Giỏ hàng & Thanh toán
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
-    Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
-    Route::post('/checkout', [CartController::class, 'placeOrder'])->name('cart.placeOrder');
-    
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('cart.checkout');
+    Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('cart.placeOrder');
+    Route::post('/checkout/coupon', [CheckoutController::class, 'applyCoupon'])->name('coupon.apply');
+    Route::delete('/checkout/coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');    
     // Coupon Routes
     Route::post('/coupon/apply', [CartController::class, 'applyCoupon'])->name('coupon.apply');
     Route::post('/coupon/remove', [CartController::class, 'removeCoupon'])->name('coupon.remove');
 
-    Route::post('/book/{id}/review', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::post('/books/{bookId}/review', [UserReviewController::class, 'store'])->name('books.review.store');
+
+    Route::get('/wishlist', [UserWishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/toggle/{id}', [UserWishlistController::class, 'toggle'])->name('wishlist.toggle');
 
     // 4. Nhóm Quản trị (Admin)
     Route::prefix('admin')->group(function () {
@@ -85,5 +98,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/reviews/{id}/violate', [AdminController::class, 'reviewsViolate'])->name('admin.reviews.violate');
         Route::delete('/reviews/{id}', [AdminController::class, 'reviewsDestroy'])->name('admin.reviews.destroy');
 
+        Route::get('/vouchers', [AdminVoucherController::class, 'index'])->name('admin.vouchers.index');
+        Route::post('/vouchers', [AdminVoucherController::class, 'store'])->name('admin.vouchers.store');
+        Route::put('/vouchers/{id}', [AdminVoucherController::class, 'update'])->name('admin.vouchers.update');
+        Route::delete('/vouchers/{id}', [AdminVoucherController::class, 'destroy'])->name('admin.vouchers.destroy');
+        Route::post('/vouchers/{id}/toggle-status', [AdminVoucherController::class, 'toggleStatus'])->name('admin.vouchers.toggleStatus');
     });
 });

@@ -23,7 +23,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // Chia sẻ biến $categories cho tất cả các file trong folder partials
         View::composer('partials.header', function ($view) {
-            $view->with('categories', Category::all());
+            $megamenuCategories = Category::whereNull('parent_id') // Lấy danh mục gốc (Cha lớn)
+                ->with('children.children')                    // Nạp trước danh mục Con và Cháu
+                ->get();
+                
+            $view->with('megamenuCategories', $megamenuCategories);
         });
     }
 }

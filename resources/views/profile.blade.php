@@ -125,7 +125,7 @@
                 <div class="v2t-profile-card">
                     <h3 class="font-serif font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4" style="font-size: 1.15rem;">Đổi mật khẩu bảo mật</h3>
                     
-                    <form action="{{ route('profile.password') }}" method="POST">
+                    <form action="{{ route('profile.password.update') }}" method="POST">
                         @csrf
                         @method('PUT')
                         

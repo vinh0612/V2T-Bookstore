@@ -316,7 +316,7 @@
                                 </form>
 
                                 <div>
-                                    <a href="{{ route('book.show', $book->id) }}" class="v2t-img-link">
+                                    <a href="{{ route('books.show', $book->id) }}" class="v2t-img-link">
                                         <img src="{{ $book->image_url }}" alt="{{ $book->title }}" onerror="this.onerror=null; this.src='https://placehold.co/400x600/1e3e36/ffffff?text=V2T+Bookstore';" class="v2t-book-img">
                                     </a>
                                     
@@ -334,7 +334,7 @@
                                     </div>
                                     
                                     <h3 class="v2t-book-title">
-                                        <a href="{{ route('book.show', $book->id) }}">{{ $book->title }}</a>
+                                        <a href="{{ route('books.show', $book->id) }}">{{ $book->title }}</a>
                                     </h3>
                                     <p class="v2t-author-text">bởi {{ $book->author }}</p>
                                 </div>

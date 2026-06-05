@@ -98,6 +98,11 @@
                 <a href="{{ route('admin.reviews.index') }}" class="sidebar-link {{ request()->routeIs('admin.reviews.*') ? 'sidebar-link-active' : '' }}">
                     Quản lý đánh giá
                 </a>
+
+                <a href="{{ route('admin.vouchers.index') }}" class="sidebar-link {{ request()->routeIs('admin.vouchers.*') ? 'sidebar-link-active' : '' }}">
+                    Quản lý Mã giảm giá
+                </a>
+
             </nav>
         </div>
 

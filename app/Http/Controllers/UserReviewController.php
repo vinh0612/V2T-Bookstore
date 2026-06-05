@@ -7,11 +7,12 @@ use App\Models\Review;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\Auth;
 
-class ReviewController extends Controller
+class UserReviewController extends Controller
 {
+    // Xử lý lưu đánh giá và chấm điểm sách từ phía khách hàng
     public function store(Request $request, $bookId)
     {
-        // 1. Kiểm tra user đã mua sách này chưa
+        // 1. CHẶN SPAM: Kiểm tra user hiện tại đã từng mua và hoàn thành đơn hàng cuốn sách này chưa
         $hasPurchased = OrderItem::where('book_id', $bookId)
             ->whereHas('order', function ($q) {
                 $q->where('user_id', Auth::id());
@@ -22,7 +23,7 @@ class ReviewController extends Controller
             return redirect()->back()->with('error', 'Bạn cần mua sách này trước khi đánh giá!');
         }
 
-        // 2. Kiểm tra dữ liệu đầu vào
+        // 2. Kiểm tra dữ liệu đầu vào chặt chẽ
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'required|string|max:1000',
@@ -31,7 +32,7 @@ class ReviewController extends Controller
             'rating.required' => 'Bạn quên chọn số sao đánh giá rồi.'
         ]);
 
-        // 3. Lưu trực tiếp vào bảng reviews
+        // 3. Lưu vào bảng reviews (Trạng thái 'status' sẽ tự động nhận giá trị mặc định của DB là pending)
         Review::create([
             'book_id' => $bookId,
             'user_id' => Auth::id(),

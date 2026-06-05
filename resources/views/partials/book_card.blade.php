@@ -17,13 +17,13 @@
     </form>
 
     <!-- Ảnh bìa sách -->
-    <a href="{{ route('book.show', $book->id) }}" class="relative h-64 mb-4 overflow-hidden rounded bg-gray-50 block">
+    <a href="{{ route('books.show', $book->id) }}" class="relative h-64 mb-4 overflow-hidden rounded bg-gray-50 block">
         <img src="{{ $book->image_url }}" alt="{{ $book->title }}" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
     </a>
     
     <!-- Nhãn & Rating -->
     <div class="flex items-center justify-between gap-2 mb-2 text-[10px] font-bold tracking-wider uppercase">
-        <span style="color: {{ $tagColor ?? '#047857' }};">{{ $tag ?? 'SÁCH' }}</span>
+        <span @style(['color' => $tagColor ?? '#047857'])>{{ $tag ?? 'SÁCH' }}</span>
 
         @if(isset($book->reviews_avg_rating))
             <span class="text-amber-500 flex items-center gap-0.5" style="color: #f59e0b; font-size: 11px;">★ {{ number_format($book->reviews_avg_rating, 1) }}</span>
@@ -34,7 +34,7 @@
     
     <!-- Tiêu đề sách -->
     <h3 class="font-serif font-bold text-lg text-gray-900 leading-tight mb-1 hover:text-[var(--color-v2t-green)] transition">
-        <a href="{{ route('book.show', $book->id) }}">{{ $book->title }}</a>
+        <a href="{{ route('books.show', $book->id) }}">{{ $book->title }}</a>
     </h3>
     
     <!-- Tác giả -->

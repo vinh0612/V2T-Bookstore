@@ -3,28 +3,44 @@
 @section('title', 'V2T Bookstore - Thiên Đường Sách Mơ Ước')
 
 @section('content')
-<!-- Hero Section / Banner -->
-<div class="relative bg-[var(--color-v2t-green)] rounded-2xl overflow-hidden mb-16 shadow-xl">
-    <div class="absolute inset-0 opacity-20">
-        <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80" alt="Thư viện" class="w-full h-full object-cover">
+<div class="relative bg-slate-900 rounded-2xl overflow-hidden mb-16 shadow-md min-h-[440px] md:min-h-[480px] flex items-center mx-4 md:mx-0">
+    
+    <div class="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80" 
+             alt="Thư viện sách" 
+             class="w-full h-full object-cover object-center opacity-30"> <div class="absolute inset-0" style="background: linear-gradient(to right, rgba(17, 24, 39, 0.95) 0%, rgba(17, 24, 39, 0.85) 55%, rgba(17, 24, 39, 0.3) 100%);"></div>
     </div>
     
-    <div class="relative p-12 md:p-20 flex flex-col md:flex-row items-center justify-between z-10">
-        <div class="max-w-2xl text-white">
-            <span class="inline-block py-1 px-3 rounded-full bg-white/20 text-xs font-bold tracking-wider mb-4 uppercase">Tri thức là sức mạnh</span>
-            <h1 class="text-4xl md:text-6xl font-serif font-bold mb-6 leading-tight">Khơi nguồn cảm hứng & mở lối tương lai</h1>
-            <p class="text-sm md:text-lg text-gray-200 mb-8 font-light leading-relaxed">
+    <div class="relative w-full md:w-2/3 lg:w-1/2 px-6 sm:px-12 md:px-16 py-12 z-10 flex flex-col justify-center">
+        <div class="max-w-[520px]">
+            
+            <div class="mb-4">
+                <span class="inline-block py-1 px-3 rounded bg-orange-600 text-white text-xs md:text-sm font-bold tracking-wider uppercase shadow-sm">
+                    Tri thức là sức mạnh
+                </span>
+            </div>
+            
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white mb-5 leading-tight tracking-tight">
+                Khơi nguồn cảm hứng & mở lối tương lai
+            </h1>
+            
+            <p class="text-sm sm:text-base text-white mb-8 font-normal leading-relaxed drop-shadow-sm">
                 Chào mừng bạn đến với V2T Bookstore - nơi hội tụ những tinh hoa tri thức nhân loại. Hãy đắm chìm vào không gian văn học sâu sắc, tìm kiếm câu trả lời cho tương lai và lưu trữ những tác phẩm yêu thích của bạn ngay hôm nay.
             </p>
-            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-                <a href="/shop" style="display: inline-block; background: white; color: #1e3e36; font-weight: 700; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-size: 0.9375rem; box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: all 0.2s;">Mua Ngay</a>
-                <a href="#featured-section" style="display: inline-block; background: transparent; color: white; font-weight: 600; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-size: 0.9375rem; border: 2px solid rgba(255,255,255,0.5); transition: all 0.2s;">Khám Phá Sách Nổi Bật</a>
+            
+            <div class="flex flex-wrap gap-4">
+                <a href="/shop" class="inline-block bg-[var(--color-v2t-green)] text-white font-bold px-7 py-3 rounded-lg text-xs shadow-md hover:brightness-110 transition duration-200 uppercase tracking-wider">
+                    Mua Ngay
+                </a>
+                <a href="#featured-section" class="inline-block bg-transparent text-white border border-white/40 font-bold px-7 py-3 rounded-lg text-xs hover:bg-white/10 transition duration-200 uppercase tracking-wider">
+                    Khám Phá Sách Nổi Bật
+                </a>
             </div>
+            
         </div>
     </div>
 </div>
 
-<!-- SECTION 1: Sách Nổi Bật (Featured Books) -->
 <div id="featured-section" class="mb-16">
     <div class="flex justify-between items-end mb-8">
         <div>
@@ -41,7 +57,6 @@
     </div>
 </div>
 
-<!-- SECTION 2: Sách Bán Chạy (Best Sellers) -->
 <div class="mb-16">
     <div class="flex justify-between items-end mb-8">
         <div>
@@ -58,7 +73,6 @@
     </div>
 </div>
 
-<!-- SECTION 3: Sách Mới Phát Hành (Newly Released Books) -->
 <div class="mb-20">
     <div class="flex justify-between items-end mb-8">
         <div>
@@ -75,7 +89,6 @@
     </div>
 </div>
 
-<!-- SECTION 4: Đánh Giá Khách Hàng (Customer Reviews) -->
 <div class="bg-gray-50 rounded-2xl p-10 md:p-16 mb-20 border border-gray-100 shadow-sm">
     <div class="text-center max-w-xl mx-auto mb-12">
         <span class="text-xs font-bold text-[var(--color-v2t-green)] uppercase tracking-wider">Cảm Nhận Độc Giả</span>
@@ -102,12 +115,11 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-sm text-gray-900">{{ $review->user->name ?? 'Khách ẩn danh' }}</h4>
-                        <span class="text-[11px] text-gray-400">Độc giả của cuốn <a href="{{ route('book.show', $review->book_id) }}" class="underline text-[var(--color-v2t-green)]">{{ $review->book->title ?? '' }}</a></span>
+                        <span class="text-[11px] text-gray-400">Độc giả của cuốn <a href="{{ route('books.show', $review->book_id) }}" class="underline text-[var(--color-v2t-green)]">{{ $review->book->title ?? '' }}</a></span>
                     </div>
                 </div>
             </div>
         @empty
-            <!-- Đánh giá mẫu nếu database chưa có review -->
             <div class="bg-white p-6 rounded-xl border border-gray-150 shadow-sm flex flex-col justify-between">
                 <div>
                     <div class="flex items-center gap-0.5 text-amber-500 mb-4" style="color: #f59e0b;">
@@ -165,7 +177,6 @@
     </div>
 </div>
 
-<!-- SECTION 5: Blog & Tin Tức (Blog/News) -->
 <div class="mb-16">
     <div class="text-center max-w-xl mx-auto mb-12">
         <span class="text-xs font-bold text-[var(--color-v2t-green)] uppercase tracking-wider">Góc Độc Giả</span>
@@ -174,13 +185,12 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <!-- Bài viết 1 -->
         <article class="bg-white rounded-xl border border-gray-150 overflow-hidden shadow-sm hover:shadow-md transition group">
             <div class="h-48 overflow-hidden bg-gray-50">
                 <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Blog 1" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
             </div>
             <div class="p-6">
-                <div class="flex items-center gap-3 text-xs text-gray-450 mb-3">
+                <div class="flex items-center gap-3 text-xs text-gray-400 mb-3">
                     <span>📅 02/06/2026</span>
                     <span>•</span>
                     <span>⏱️ 5 phút đọc</span>
@@ -195,13 +205,12 @@
             </div>
         </article>
 
-        <!-- Bài viết 2 -->
         <article class="bg-white rounded-xl border border-gray-150 overflow-hidden shadow-sm hover:shadow-md transition group">
             <div class="h-48 overflow-hidden bg-gray-50">
                 <img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Blog 2" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
             </div>
             <div class="p-6">
-                <div class="flex items-center gap-3 text-xs text-gray-450 mb-3">
+                <div class="flex items-center gap-3 text-xs text-gray-400 mb-3">
                     <span>📅 28/05/2026</span>
                     <span>•</span>
                     <span>⏱️ 7 phút đọc</span>
@@ -216,13 +225,12 @@
             </div>
         </article>
 
-        <!-- Bài viết 3 -->
         <article class="bg-white rounded-xl border border-gray-150 overflow-hidden shadow-sm hover:shadow-md transition group">
             <div class="h-48 overflow-hidden bg-gray-50">
                 <img src="https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Blog 3" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
             </div>
             <div class="p-6">
-                <div class="flex items-center gap-3 text-xs text-gray-450 mb-3">
+                <div class="flex items-center gap-3 text-xs text-gray-400 mb-3">
                     <span>📅 15/05/2026</span>
                     <span>•</span>
                     <span>⏱️ 4 phút đọc</span>
