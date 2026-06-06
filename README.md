@@ -248,10 +248,5 @@ npm install
 
 This project is open-source software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
-## 👤 Author
-
-- **Vinh0612** - Initial work
-
----
 
 **Lưu ý**: Đảm bảo rằng bạn đã cấu hình đúng database trước khi chạy migrations!
