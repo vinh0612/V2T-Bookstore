@@ -1,59 +1,257 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# V2T Bookstore
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Ứng dụng quản lý và bán sách trực tuyến được xây dựng bằng Laravel framework.
 
-## About Laravel
+## 🔧 Yêu cầu hệ thống
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **PHP**: >= 8.1
+- **Composer**: ~2.0
+- **Node.js**: >= 14.0
+- **NPM**: >= 6.0
+- **MySQL/MariaDB**: >= 5.7
+- **Git**: Để clone repository
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📥 Cài đặt
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 1. Clone repository
+```bash
+git clone https://github.com/vinh0612/V2T-Bookstore.git
+cd V2T-Bookstore
+```
 
-## Learning Laravel
+### 2. Cài đặt PHP dependencies
+```bash
+composer install
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 3. Cài đặt Node.js dependencies
+```bash
+npm install
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 4. Tạo file .env
+```bash
+cp .env.example .env
+```
 
-## Laravel Sponsors
+### 5. Sinh application key
+```bash
+php artisan key:generate
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 6. Cấu hình database
+Mở file `.env` và cập nhật thông tin database:
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=v2t_bookstore
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-### Premium Partners
+### 7. Chạy migration
+```bash
+php artisan migrate
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 8. (Tùy chọn) Seed database
+```bash
+php artisan db:seed
+```
 
-## Contributing
+## ▶️ Chạy ứng dụng
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Cách 1: Sử dụng PHP built-in server
+```bash
+php artisan serve
+```
+Truy cập: http://localhost:8000
 
-## Code of Conduct
+### Cách 2: Sử dụng Artisan (Port tùy chỉnh)
+```bash
+php artisan serve --host=0.0.0.0 --port=8000
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Chạy Asset Compilation
+Mở terminal khác và chạy:
+```bash
+npm run dev
+```
 
-## Security Vulnerabilities
+Hoặc để build cho production:
+```bash
+npm run build
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🛠️ Các lệnh quan trọng
 
-## License
+### Database
+```bash
+# Tạo bảng database
+php artisan migrate
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Rollback migration gần nhất
+php artisan migrate:rollback
+
+# Rollback tất cả migrations
+php artisan migrate:reset
+
+# Rollback rồi migrate lại
+php artisan migrate:refresh
+
+# Rollback, migrate, và seed
+php artisan migrate:refresh --seed
+```
+
+### Cache
+```bash
+# Xóa cache
+php artisan cache:clear
+
+# Xóa config cache
+php artisan config:clear
+
+# Xóa route cache
+php artisan route:clear
+
+# Xóa view cache
+php artisan view:clear
+```
+
+### Development
+```bash
+# Xóa tất cả cache
+php artisan optimize:clear
+
+# Tạo link symbolic cho storage
+php artisan storage:link
+
+# Tạo file mẫu
+php artisan make:model <ModelName>
+php artisan make:controller <ControllerName>
+php artisan make:migration <migration_name>
+```
+
+## 📁 Cấu trúc thư mục
+
+```
+V2T-Bookstore/
+├── app/                 # Mã ứng dụng (Models, Controllers, Requests)
+├── bootstrap/           # File khởi động
+├── config/              # File cấu hình
+├── database/            # Migrations và Seeders
+├── public/              # Public assets (CSS, JS, images)
+├── resources/           # Views (Blade templates), CSS, JS
+├── routes/              # Định tuyến ứng dụng
+├── storage/             # Lưu trữ files
+├── tests/               # Unit tests
+└── .env.example         # File cấu hình mẫu
+```
+
+## 🚀 Deployment
+
+### Chuẩn bị cho Production
+```bash
+# Cài đặt dependencies
+composer install --no-dev
+
+# Build assets
+npm run build
+
+# Cache config
+php artisan config:cache
+
+# Cache routes
+php artisan route:cache
+
+# Cache views
+php artisan view:cache
+```
+
+### Cấu hình Web Server (Nginx)
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+    root /path/to/V2T-Bookstore/public;
+
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+
+    index index.php;
+
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
+
+## 🧪 Testing
+
+```bash
+# Chạy unit tests
+php artisan test
+
+# Chạy với code coverage
+php artisan test --coverage
+```
+
+## 📝 Troubleshooting
+
+### Lỗi: "No application encryption key has been generated"
+```bash
+php artisan key:generate
+```
+
+### Lỗi: "Migrations don't exist"
+```bash
+php artisan migrate --path=database/migrations
+```
+
+### Lỗi: Permission Denied trên storage
+```bash
+chmod -R 775 storage/
+chmod -R 775 bootstrap/cache/
+```
+
+### Lỗi: npm dependencies
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+## 📚 Tài liệu tham khảo
+
+- [Laravel Documentation](https://laravel.com/docs)
+- [Laravel Blade Templates](https://laravel.com/docs/blade)
+- [Eloquent ORM](https://laravel.com/docs/eloquent)
+
+## 📄 License
+
+This project is open-source software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## 👤 Author
+
+- **Vinh0612** - Initial work
+
+---
+
+**Lưu ý**: Đảm bảo rằng bạn đã cấu hình đúng database trước khi chạy migrations!
