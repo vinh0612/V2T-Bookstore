@@ -168,7 +168,7 @@
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wide text-gray-600 mb-1">Loại chiết khấu *</label>
                     <select name="type" required class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:border-[#1e3e36]">
-                        <option value="percentage">Giảm theo phần禅 (%)</option>
+                        <option value="percentage">Giảm theo phần trăm (%)</option>
                         <option value="fixed">Giảm số tiền mặt (đ)</option>
                     </select>
                 </div>

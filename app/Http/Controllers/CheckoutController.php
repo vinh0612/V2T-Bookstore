@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Book;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Voucher;
 
 class CheckoutController extends Controller
 {
@@ -112,7 +113,7 @@ class CheckoutController extends Controller
         }
     }
 
-    // 3. Áp dụng mã giảm giá
+    // 3. Áp dụng mã giảm giá (Nối thẳng vào Database)
     public function applyCoupon(Request $request)
     {
         $request->validate([
@@ -122,35 +123,52 @@ class CheckoutController extends Controller
         $code = strtoupper($request->coupon_code);
         $cart = session()->get('cart', []);
         
+        // Tính tổng tiền hiện tại của giỏ hàng
         $subtotal = 0;
         foreach ($cart as $item) {
             $subtotal += $item['price'] * $item['quantity'];
         }
 
-        if ($code === 'V2T10') {
-            $discount = $subtotal * 0.1;
-            session()->put('coupon', [
-                'code' => 'V2T10',
-                'type' => 'percentage',
-                'value' => 10,
-                'discount' => $discount,
-            ]);
-            return redirect()->back()->with('success', '🎉 Đã áp dụng mã giảm giá V2T10 (Giảm 10%)!');
-        } elseif ($code === 'GIAM50') {
-            if ($subtotal < 200000) {
-                return redirect()->back()->with('error', 'Mã GIAM50 chỉ áp dụng cho đơn hàng từ 200.000đ trở lên!');
-            }
-            $discount = 50000;
-            session()->put('coupon', [
-                'code' => 'GIAM50',
-                'type' => 'fixed',
-                'value' => 50000,
-                'discount' => $discount,
-            ]);
-            return redirect()->back()->with('success', '🎉 Đã áp dụng mã giảm giá GIAM50 (Giảm 50k)!');
+        $voucher = Voucher::where('code', $code)->first();
+
+        if (!$voucher) {
+            return redirect()->back()->with('error', 'Mã giảm giá không tồn tại!');
         }
 
-        return redirect()->back()->with('error', 'Mã giảm giá không hợp lệ!');
+
+        if ($voucher->status !== 'active') {
+            return redirect()->back()->with('error', 'Mã giảm giá này đã hết hạn hoặc bị khóa!');
+        }
+
+        if ($voucher->max_uses > 0 && $voucher->uses >= $voucher->max_uses) {
+            return redirect()->back()->with('error', 'Mã giảm giá này đã hết lượt sử dụng!');
+        }
+
+        if ($subtotal < $voucher->min_order_value) {
+            return redirect()->back()->with('error', 'Đơn hàng của bạn phải từ ' . number_format($voucher->min_order_value, 0, ',', '.') . 'đ để áp dụng mã này!');
+        }
+
+        $discount = 0;
+        
+        if ($voucher->type === 'percentage') {
+            $discount = ($subtotal * $voucher->value) / 100;
+            
+            if (isset($voucher->max_discount) && $voucher->max_discount > 0 && $discount > $voucher->max_discount) {
+                $discount = $voucher->max_discount;
+            }
+        } else {
+            $discount = $voucher->value;
+        }
+
+        session()->put('coupon', [
+            'id' => $voucher->id,
+            'code' => $voucher->code,
+            'type' => $voucher->type,
+            'value' => $voucher->value,
+            'discount' => $discount,
+        ]);
+
+        return redirect()->back()->with('success', '🎉 Đã áp dụng mã giảm giá ' . $voucher->code . ' thành công!');
     }
 
     // 4. Hủy mã giảm giá

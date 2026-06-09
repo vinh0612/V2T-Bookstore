@@ -36,6 +36,8 @@ Route::middleware('auth')->group(function () {
     // Quản lý hồ sơ cá nhân
     Route::get('/profile', [UserProfileController::class, 'index'])->name('profile');
     Route::put('/profile/update', [UserProfileController::class, 'update'])->name('profile.update');
+    Route::put('/orders/{id}/cancel', [UserProfileController::class, 'cancel'])->name('orders.cancel');
+    Route::get('/orders/{id}/details', [UserProfileController::class, 'showOrder'])->name('orders.show');
     
     // Đổi mật khẩu độc lập
     Route::put('/profile/change-password', [ChangePasswordController::class, 'update'])->name('profile.password.update');
@@ -48,10 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('cart.checkout');
     Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])->name('cart.placeOrder');
     Route::post('/checkout/coupon', [CheckoutController::class, 'applyCoupon'])->name('coupon.apply');
-    Route::delete('/checkout/coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');    
-    // Coupon Routes
-    Route::post('/coupon/apply', [CartController::class, 'applyCoupon'])->name('coupon.apply');
-    Route::post('/coupon/remove', [CartController::class, 'removeCoupon'])->name('coupon.remove');
+    Route::delete('/checkout/coupon', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');
 
     Route::post('/books/{bookId}/review', [UserReviewController::class, 'store'])->name('books.review.store');
 
@@ -74,9 +73,6 @@ Route::middleware('auth')->group(function () {
         // Đơn hàng
         Route::get('/orders', [AdminController::class, 'ordersIndex'])->name('admin.orders.index');
         Route::post('/orders/{id}/update-status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.updateStatus');
-
-        // Nhà cung cấp
-        Route::get('/suppliers', [AdminController::class, 'suppliersIndex'])->name('admin.suppliers.index');
 
         // Quản lý người dùng
         Route::get('/users', [AdminController::class, 'usersIndex'])->name('admin.users.index');
