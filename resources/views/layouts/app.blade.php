@@ -28,85 +28,90 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 <script>
-    // Hàm gửi dữ liệu ngầm (AJAX) không làm tải lại trang
+    // Hàm 1: Thêm nhanh ở trang chủ / cửa hàng
     function addToCart(event, bookId) {
-        // Ngăn chặn mọi hành động mặc định của nút bấm
         event.preventDefault(); 
         
-        // Cầm nút bấm để tạo hiệu ứng xoay xoay đang tải
         const button = event.currentTarget;
         const originalText = button.innerHTML;
         button.innerHTML = '⏳ Đang thêm...';
         button.disabled = true;
 
-        // Bắn tín hiệu ngầm lên Server
         fetch(`/cart/add/${bookId}`, {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}', // Chìa khóa bảo mật của Laravel
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => {
-            if (response.ok) {
-                // Thành công: Cập nhật lại số lượng trên icon giỏ hàng (nếu có)
-                // document.getElementById('cart-count').innerText = "Số mới"; 
+        .then(response => response.json()) // ĐÃ FIX: Yêu cầu dịch ra JSON
+        .then(data => {
+            if (data.success) {
+                // ĐÃ FIX: Cập nhật con số thật từ Server
+                const cartBadge = document.getElementById('cart-count');
+                if (cartBadge) {
+                    cartBadge.innerText = data.cart_count;
+                    // Hiệu ứng giật nhẹ cho đẹp mắt
+                    cartBadge.classList.add('animate-bounce');
+                    setTimeout(() => cartBadge.classList.remove('animate-bounce'), 1000);
+                }
                 
-                // Hiện thông báo xịn sò góc phải màn hình
                 Toastify({
                     text: "✅ Đã thêm sách vào giỏ hàng!",
                     duration: 3000,
-                    gravity: "top", // Hiện ở trên
-                    position: "right", // Góc phải
-                    style: {
-                        background: "linear-gradient(to right, #00b09b, #96c93d)",
-                    }
+                    gravity: "top", 
+                    position: "right", 
+                    style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
                 }).showToast();
             } else {
                 Toastify({
-                    text: "❌ Có lỗi xảy ra, không thể thêm sách.",
+                    text: "❌ Lỗi: " + (data.message || "Không thể thêm sách."),
                     style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
                 }).showToast();
             }
         })
-        .catch(error => {
-            console.error('Lỗi:', error);
-        })
+        .catch(error => console.error('Lỗi:', error))
         .finally(() => {
-            // Trả lại hình dáng ban đầu cho nút bấm
             button.innerHTML = originalText;
             button.disabled = false;
         });
     }
 
-    // Hàm gửi dữ liệu ngầm TỪ TRANG CHI TIẾT (Có kèm Số Lượng)
+    // Hàm 2: Thêm kèm số lượng ở trang chi tiết
     function addDetailToCart(event, bookId) {
         event.preventDefault(); 
         
         const button = event.currentTarget;
         const originalText = button.innerHTML;
         
-        // Lấy số lượng khách muốn mua từ ô input (id="book-qty")
         const qtyInput = document.getElementById('book-qty');
         const quantity = qtyInput ? qtyInput.value : 1;
 
         button.innerHTML = '⏳ Đang thêm...';
         button.disabled = true;
 
-        // Bắn tín hiệu ngầm kèm THEO SỐ LƯỢNG
         fetch(`/cart/add/${bookId}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json', // Báo cho server biết mình gửi dạng JSON
+                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify({ quantity: quantity }) // Gói số lượng gửi đi
+            body: JSON.stringify({ quantity: quantity })
         })
-        .then(response => {
-            if (response.ok) {
+        .then(response => response.json()) // ĐÃ FIX: Yêu cầu dịch ra JSON
+        .then(data => {
+            if (data.success) {
+                // ĐÃ FIX: Cập nhật con số thật từ Server
+                const cartBadge = document.getElementById('cart-count');
+                if (cartBadge) {
+                    cartBadge.innerText = data.cart_count;
+                    cartBadge.classList.add('animate-bounce');
+                    setTimeout(() => cartBadge.classList.remove('animate-bounce'), 1000);
+                }
+
                 Toastify({
                     text: `✅ Đã thêm ${quantity} cuốn vào giỏ!`,
                     duration: 3000,
@@ -116,7 +121,7 @@
                 }).showToast();
             } else {
                 Toastify({
-                    text: "❌ Số lượng trong kho không đủ hoặc lỗi hệ thống.",
+                    text: "❌ Lỗi: " + (data.message || "Kho không đủ."),
                     style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
                 }).showToast();
             }

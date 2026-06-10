@@ -14,7 +14,7 @@ class CartController extends Controller
         return view('cart', compact('cart'));
     }
 
-    // 2. Thêm sách vào giỏ hàng
+    // 2. Thêm sách vào giỏ hàng (ĐÃ NÂNG CẤP HỖ TRỢ AJAX)
     public function add(Request $request, $id)
     {
         $book = Book::findOrFail($id);
@@ -35,6 +35,20 @@ class CartController extends Controller
         }
 
         session()->put('cart', $cart);
+
+        // Tính toán con số để trả về cho giao diện cập nhật (Đếm số loại sách)
+        $cartCount = count($cart);
+
+        // TÁCH LUỒNG: Nếu là request ngầm (AJAX) từ Fetch API -> Trả về JSON
+        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'cart_count' => $cartCount,
+                'message' => 'Đã thêm sách vào giỏ hàng!'
+            ]);
+        }
+
+        // Nếu khách lỡ tắt Javascript thì vẫn chạy form truyền thống bình thường (Fallback an toàn)
         return redirect()->back()->with('success', 'Đã thêm sách vào giỏ hàng!');
     }
 
