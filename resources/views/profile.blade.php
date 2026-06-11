@@ -143,25 +143,25 @@
             <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
                 <strong>✅ Thành công:</strong> {{ session('success') }}
             </div>
-        @endif
+            @endif
 
-        @if(session('error'))
+            @if(session('error'))
             <div style="background-color: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
                 <strong>⚠️ Có lỗi xảy ra:</strong> {{ session('error') }}
             </div>
-        @endif
+            @endif
 
-        @if ($errors->any())
+            @if ($errors->any())
             <div style="background-color: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
                 <strong>⚠️ Vui lòng kiểm tra lại:</strong>
                 <ul style="list-style-type: disc; padding-left: 20px; margin-top: 8px; font-size: 0.875rem;">
                     @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
+                    <li>{{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
-        @endif
-        ```
+            @endif
+            ```
 
             <h1 class="text-3xl font-serif font-bold text-gray-900">Quản lý tài khoản</h1>
             <p class="text-xs text-gray-500 mt-1">Xin chào bạn, đây là nơi cập nhật thông tin và theo dõi đơn hàng của bạn.</p>
@@ -274,6 +274,14 @@
                                             @csrf
                                             @method('PUT')
                                             <button type="submit" class="px-3 py-1.5 bg-red-100 text-red-700 text-xs font-bold rounded border-none cursor-pointer hover:bg-red-200 transition">Hủy đơn</button>
+                                        </form>
+
+                                        {{-- NÚT MỚI: Chỉ hiện khi Admin đã gạt sang Đang giao --}}
+                                        @elseif($order->status == 'processing')
+                                        <form action="{{ route('orders.complete', $order->id) }}" method="POST" onsubmit="return confirm('Bạn xác nhận đã nhận được hàng và sản phẩm còn nguyên vẹn chứ?');">
+                                            @csrf
+                                            @method('PUT')
+                                            <button type="submit" class="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-bold rounded border-none cursor-pointer hover:bg-green-200 transition">✅ Đã nhận hàng</button>
                                         </form>
                                         @endif
                                     </div>

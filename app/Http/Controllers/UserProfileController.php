@@ -84,4 +84,18 @@ class UserProfileController extends Controller
 
         return view('order-details', compact('order'));
     }
+
+    public function completeOrder($id)
+    {
+        $order = Order::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+        
+        // Chỉ cho phép bấm khi đang giao
+        if ($order->status == 'processing') {
+            $order->status = 'completed';
+            $order->save();
+            return back()->with('success', '🎉 Cảm ơn bạn đã xác nhận. Chúc bạn có những phút giây đọc sách vui vẻ!');
+        }
+
+        return back()->with('error', 'Không thể thao tác trên đơn hàng này!');
+    }
 }

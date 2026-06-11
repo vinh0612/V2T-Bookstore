@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [UserProfileController::class, 'index'])->name('profile');
     Route::put('/profile/update', [UserProfileController::class, 'update'])->name('profile.update');
     Route::put('/orders/{id}/cancel', [UserProfileController::class, 'cancel'])->name('orders.cancel');
+    Route::put('/orders/{id}/complete', [UserProfileController::class, 'completeOrder'])->name('orders.complete');
     Route::get('/orders/{id}/details', [UserProfileController::class, 'showOrder'])->name('orders.show');
     
     // Đổi mật khẩu độc lập
@@ -74,6 +75,7 @@ Route::middleware('auth')->group(function () {
 
         // Đơn hàng
         Route::get('/orders', [AdminController::class, 'ordersIndex'])->name('admin.orders.index');
+        Route::get('/orders/{id}', [AdminController::class, 'ordersShow'])->name('admin.orders.show');
         Route::post('/orders/{id}/update-status', [AdminController::class, 'updateOrderStatus'])->name('admin.orders.updateStatus');
 
         // Quản lý người dùng

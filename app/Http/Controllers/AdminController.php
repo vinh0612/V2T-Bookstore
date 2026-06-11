@@ -202,15 +202,20 @@ class AdminController extends Controller
     {
         $totalOrders = Order::count();
         $pendingOrders = Order::where('status', 'pending')->count();
-        $shippingOrders = Order::where('status', 'shipping')->count();
+        // ĐÃ CHUẨN HÓA: Dùng 'processing' thay vì 'shipping' để khớp với UserProfile
+        $processingOrders = Order::where('status', 'processing')->count();
         $completedOrders = Order::where('status', 'completed')->count();
+        // THÊM MỚI: Đếm số lượng đơn đã hủy
+        $cancelledOrders = Order::where('status', 'cancelled')->count();
 
         $query = Order::with('user');
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
+                // Hỗ trợ tìm kiếm theo ID đơn hàng hoặc Tên khách hàng
                 $cleanSearchId = str_replace('INK-', '', $search);
+                $cleanSearchId = str_replace('#', '', $cleanSearchId); // Bỏ luôn cả dấu # nếu khách gõ
                 $q->where('id', 'like', '%' . $cleanSearchId . '%')
                   ->orWhereHas('user', function($userQuery) use ($search) {
                       $userQuery->where('name', 'like', '%' . $search . '%');
@@ -219,18 +224,52 @@ class AdminController extends Controller
         }
 
         $orders = $query->latest()->paginate(10);
-        return view('admin.orders', compact('orders', 'totalOrders', 'pendingOrders', 'shippingOrders', 'completedOrders'));
+        
+        // ĐÃ CHUẨN HÓA: Truyền biến processingOrders và cancelledOrders ra View
+        return view('admin.orders', compact('orders', 'totalOrders', 'pendingOrders', 'processingOrders', 'completedOrders', 'cancelledOrders'));
+    }
+
+    public function ordersShow($id)
+    {
+        // Kéo đơn hàng ra, đính kèm thông tin User (Người mua) và Items (Các cuốn sách)
+        $order = Order::with(['user', 'items.book'])->findOrFail($id);
+        
+        return view('admin.orders_show', compact('order'));
     }
 
     public function updateOrderStatus(Request $request, $id)
     {
         $order = Order::findOrFail($id);
+        
+        // 1. CHỐNG HACK: Nếu đơn đã khóa (Thành công / Hủy) thì cấm tiệt mọi thao tác
+        if (in_array($order->status, ['completed', 'cancelled'])) {
+            return back()->with('error', '❌ Đơn hàng này đã đóng, không thể thay đổi trạng thái!');
+        }
+
         $request->validate([
-            'status' => 'required|in:pending,shipping,completed',
+            'status' => 'required|in:pending,processing,completed,cancelled',
         ]);
-        $order->status = $request->status;
+        
+        $newStatus = $request->status;
+
+        // 2. NGĂN NHẢY CÓC: Chờ duyệt KHÔNG ĐƯỢC nhảy thẳng lên Thành công
+        if ($order->status == 'pending' && $newStatus == 'completed') {
+            return back()->with('error', '❌ Sai luồng! Đơn hàng phải qua bước Đang giao trước khi Thành công.');
+        }
+        
+        // Logic hoàn kho nếu Hủy
+        if ($newStatus == 'cancelled' && $order->status != 'cancelled') {
+            foreach ($order->items as $item) {
+                if ($item->book) {
+                    $item->book->increment('stock', $item->quantity);
+                }
+            }
+        }
+
+        $order->status = $newStatus;
         $order->save();
-        return back()->with('success', 'Đã cập nhật trạng thái đơn hàng thành công!');
+        
+        return back()->with('success', '✅ Đã cập nhật trạng thái đơn hàng thành công!');
     }
 
     /* =========================================================================
