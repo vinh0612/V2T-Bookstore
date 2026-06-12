@@ -98,6 +98,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/reviews/{id}/reply', [AdminController::class, 'reviewsReply'])->name('admin.reviews.reply');
         Route::post('/reviews/{id}/violate', [AdminController::class, 'reviewsViolate'])->name('admin.reviews.violate');
         Route::delete('/reviews/{id}', [AdminController::class, 'reviewsDestroy'])->name('admin.reviews.destroy');
+        Route::delete('/admin/reviews/destroy-all-violated', [AdminController::class, 'destroyAllViolated'])->name('admin.reviews.destroyAllViolated');
+        Route::post('/admin/reviews/approve-all-pending', [AdminController::class, 'approveAllPending'])->name('admin.reviews.approveAllPending');
+        Route::post('/admin/reviews/approve-all-suspicious', [AdminController::class, 'approveAllSuspicious'])->name('admin.reviews.approveAllSuspicious');
 
         Route::get('/vouchers', [AdminVoucherController::class, 'index'])->name('admin.vouchers.index');
         Route::post('/vouchers', [AdminVoucherController::class, 'store'])->name('admin.vouchers.store');

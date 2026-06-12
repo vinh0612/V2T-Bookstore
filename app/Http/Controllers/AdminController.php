@@ -436,15 +436,17 @@ class AdminController extends Controller
         $pendingCount = Review::where('status', 'pending')->count();
         $avgRating = round(Review::where('status', 'approved')->avg('rating') ?? 0, 1);
         $violatedCount = Review::where('status', 'violated')->count();
-
+        $suspiciousCount = Review::where('status', 'suspicious')->count(); // Đếm ở đây rồi
+        
         $query = Review::with(['book', 'user']);
         
-        if ($request->has('tab') && in_array($request->tab, ['pending', 'approved', 'violated'])) {
+        if ($request->has('tab') && in_array($request->tab, ['pending', 'approved', 'violated', 'suspicious'])) {
             $query->where('status', $request->tab);
         }
 
         $reviews = $query->latest()->paginate(10);
-        return view('admin.reviews.index', compact('reviews', 'totalCount', 'pendingCount', 'avgRating', 'violatedCount'));
+        
+        return view('admin.reviews.index', compact('reviews', 'totalCount', 'pendingCount', 'avgRating', 'violatedCount', 'suspiciousCount'));
     }
 
     public function reviewsApprove($id)
@@ -476,6 +478,25 @@ class AdminController extends Controller
     {
         Review::findOrFail($id)->delete();
         return back()->with('success', '🗑️ Đã xóa vĩnh viễn đánh giá khỏi hệ thống!');
+    }
+
+    public function destroyAllViolated() {
+    Review::where('status', 'violated')->delete();
+    return redirect()->back()->with('success', 'Đã dọn dẹp sạch sẽ toàn bộ bình luận vi phạm!');
+    }
+
+    public function approveAllPending()
+    {
+        // Quét sạch những ông đang pending và chuyển thành approved
+        Review::where('status', 'pending')->update(['status' => 'approved']);
+        return back()->with('success', '🎉 Đã phê duyệt toàn bộ bình luận đang chờ duyệt thành công!');
+    }
+
+    public function approveAllSuspicious()
+    {
+        // Quét sạch những ông đang bị AI nghi vấn và chuyển thành approved
+        Review::where('status', 'suspicious')->update(['status' => 'approved']);
+        return back()->with('success', '🎉 Đã phê duyệt toàn bộ bình luận nghi vấn thành công!');
     }
 
     /* =========================================================================
