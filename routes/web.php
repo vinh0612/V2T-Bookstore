@@ -27,7 +27,8 @@ Route::post('/login', [LoginController::class, 'login']);
 
 // Luồng Đăng ký
 Route::get('/register', [RegisterController::class, 'showRegister'])->name('register');
-Route::post('/register', [RegisterController::class, 'register']);
+Route::post('/register/send-otp', [RegisterController::class, 'sendOtp'])->name('register.send_otp');
+Route::post('/register/verify-otp', [RegisterController::class, 'verifyOtp'])->name('register.verify_otp');
 
 // Luồng Đăng xuất
 Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
