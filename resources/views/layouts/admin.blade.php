@@ -89,7 +89,7 @@
                     Quản lý đơn hàng
                 </a>
                 <a href="/admin/users" class="sidebar-link {{ request()->is('admin/users*') ? 'sidebar-link-active' : '' }}">
-                    Người dùng
+                    Quản lý     người dùng
                 </a>
                 <a href="{{ route('admin.suppliers.index') }}" class="sidebar-link {{ request()->is('admin/suppliers*') ? 'sidebar-link-active' : '' }}">
                     Quản lý nhà cung cấp

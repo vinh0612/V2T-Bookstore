@@ -37,7 +37,7 @@
                         </button>
                     </form>
 
-                    <a href="{{ route('book.show', $book->id) }}" class="relative h-64 mb-4 overflow-hidden rounded bg-gray-50 block">
+                    <a href="{{ route('books.show', $book->id) }}" class="relative h-64 mb-4 overflow-hidden rounded bg-gray-50 block">
                         <img src="{{ $book->image_url }}" alt="{{ $book->title }}" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
                     </a>
                     
@@ -52,7 +52,7 @@
                     </div>
                     
                     <h3 class="font-serif font-bold text-lg text-gray-900 leading-tight mb-1 hover:text-[var(--color-v2t-green)] transition">
-                        <a href="{{ route('book.show', $book->id) }}">{{ $book->title }}</a>
+                        <a href="{{ route('books.show', $book->id) }}">{{ $book->title }}</a>
                     </h3>
                     
                     <p class="text-sm text-gray-600 italic mb-4">bởi {{ $book->author }}</p>

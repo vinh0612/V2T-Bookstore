@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Supplier;
 use App\Models\Review;
+use App\Models\Import;
+use App\Models\ImportItem;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -202,15 +204,20 @@ class AdminController extends Controller
     {
         $totalOrders = Order::count();
         $pendingOrders = Order::where('status', 'pending')->count();
-        $shippingOrders = Order::where('status', 'shipping')->count();
+        // ĐÃ CHUẨN HÓA: Dùng 'processing' thay vì 'shipping' để khớp với UserProfile
+        $processingOrders = Order::where('status', 'processing')->count();
         $completedOrders = Order::where('status', 'completed')->count();
+        // THÊM MỚI: Đếm số lượng đơn đã hủy
+        $cancelledOrders = Order::where('status', 'cancelled')->count();
 
         $query = Order::with('user');
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
+                // Hỗ trợ tìm kiếm theo ID đơn hàng hoặc Tên khách hàng
                 $cleanSearchId = str_replace('INK-', '', $search);
+                $cleanSearchId = str_replace('#', '', $cleanSearchId); // Bỏ luôn cả dấu # nếu khách gõ
                 $q->where('id', 'like', '%' . $cleanSearchId . '%')
                   ->orWhereHas('user', function($userQuery) use ($search) {
                       $userQuery->where('name', 'like', '%' . $search . '%');
@@ -219,18 +226,52 @@ class AdminController extends Controller
         }
 
         $orders = $query->latest()->paginate(10);
-        return view('admin.orders', compact('orders', 'totalOrders', 'pendingOrders', 'shippingOrders', 'completedOrders'));
+        
+        // ĐÃ CHUẨN HÓA: Truyền biến processingOrders và cancelledOrders ra View
+        return view('admin.orders', compact('orders', 'totalOrders', 'pendingOrders', 'processingOrders', 'completedOrders', 'cancelledOrders'));
+    }
+
+    public function ordersShow($id)
+    {
+        // Kéo đơn hàng ra, đính kèm thông tin User (Người mua) và Items (Các cuốn sách)
+        $order = Order::with(['user', 'items.book'])->findOrFail($id);
+        
+        return view('admin.orders_show', compact('order'));
     }
 
     public function updateOrderStatus(Request $request, $id)
     {
         $order = Order::findOrFail($id);
+        
+        // 1. CHỐNG HACK: Nếu đơn đã khóa (Thành công / Hủy) thì cấm tiệt mọi thao tác
+        if (in_array($order->status, ['completed', 'cancelled'])) {
+            return back()->with('error', '❌ Đơn hàng này đã đóng, không thể thay đổi trạng thái!');
+        }
+
         $request->validate([
-            'status' => 'required|in:pending,shipping,completed',
+            'status' => 'required|in:pending,processing,completed,cancelled',
         ]);
-        $order->status = $request->status;
+        
+        $newStatus = $request->status;
+
+        // 2. NGĂN NHẢY CÓC: Chờ duyệt KHÔNG ĐƯỢC nhảy thẳng lên Thành công
+        if ($order->status == 'pending' && $newStatus == 'completed') {
+            return back()->with('error', '❌ Sai luồng! Đơn hàng phải qua bước Đang giao trước khi Thành công.');
+        }
+        
+        // Logic hoàn kho nếu Hủy
+        if ($newStatus == 'cancelled' && $order->status != 'cancelled') {
+            foreach ($order->items as $item) {
+                if ($item->book) {
+                    $item->book->increment('stock', $item->quantity);
+                }
+            }
+        }
+
+        $order->status = $newStatus;
         $order->save();
-        return back()->with('success', 'Đã cập nhật trạng thái đơn hàng thành công!');
+        
+        return back()->with('success', '✅ Đã cập nhật trạng thái đơn hàng thành công!');
     }
 
     /* =========================================================================
@@ -248,6 +289,12 @@ class AdminController extends Controller
     public function toggleUserStatus($id)
     {
         $user = User::findOrFail($id);
+
+        // LỚP BẢO VỆ 1: Chặn đứng ý đồ khóa tài khoản Admin
+        if ($user->role === 'admin') {
+            return back()->with('error', '⛔ Cảnh báo: Bạn không có quyền khóa tài khoản Quản trị viên!');
+        }
+
         $user->status = $user->status == 'active' ? 'blocked' : 'active';
         $user->save();
         return back()->with('success', 'Đã cập nhật trạng thái tài khoản người dùng thành công!');
@@ -259,6 +306,21 @@ class AdminController extends Controller
         $orderCount = Order::where('user_id', $id)->count();
         $totalSpent = Order::where('user_id', $id)->where('status', 'completed')->sum('total_price');
         return view('admin.users_show', compact('user', 'orderCount', 'totalSpent'));
+    }
+
+    // HÀM MỚI: Xử lý xóa người dùng
+    public function usersDestroy($id)
+    {
+        $user = User::findOrFail($id);
+
+        // LỚP BẢO VỆ 2: Chặn đứng ý đồ xóa tài khoản Admin
+        if ($user->role === 'admin') {
+            return back()->with('error', '⛔ Cảnh báo: Tài khoản Quản trị viên được bảo vệ tuyệt đối, không thể xóa!');
+        }
+
+        $user->delete();
+
+        return back()->with('success', '🗑️ Đã xóa vĩnh viễn tài khoản người dùng khỏi hệ thống!');
     }
 
     /* =========================================================================
@@ -286,9 +348,21 @@ class AdminController extends Controller
             'contract_code' => 'required|string|max:255|unique:suppliers,contract_code',
             'contact_name' => 'required|string|max:255',
             'contact_title' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
+            'phone' => ['required', 'string', 'regex:/^([0-9\s\-\+\(\)]*)$/', 'min:10', 'max:20'],
             'email' => 'required|email|max:255',
             'status' => 'required|in:active,paused',
+        ], [
+            // VIETSUB CÂU LỖI CHO NÓ THÂN THIỆN
+            'name.required' => 'Tên nhà cung cấp không được để trống.',
+            'contract_code.required' => 'Mã hợp đồng không được để trống.',
+            'contract_code.unique' => 'Mã hợp đồng này đã tồn tại trong hệ thống rồi.',
+            'contact_name.required' => 'Không được để trống tên người liên hệ.',
+            'contact_title.required' => 'Chức vụ người liên hệ không được bỏ trống.',
+            'phone.required' => 'Không được để trống số điện thoại.',
+            'phone.regex' => 'Số điện thoại phải bắt đầu từ 0 và đủ 10 số',
+            'phone.min' => 'Số điện thoại phải có ít nhất 10 số.',
+            'email.required' => 'Email không được để trống.',
+            'email.email' => 'Sai định dạng Email, phải có @domain.com.',
         ]);
 
         Supplier::create($request->all());
@@ -310,9 +384,21 @@ class AdminController extends Controller
             'contract_code' => 'required|string|max:255|unique:suppliers,contract_code,' . $id,
             'contact_name' => 'required|string|max:255',
             'contact_title' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
+            'phone' => ['required', 'string', 'regex:/^0[0-9]{9}$/'],
             'email' => 'required|email|max:255',
             'status' => 'required|in:active,paused',
+        ], [
+            // VIETSUB TƯƠNG TỰ BÊN STORE
+            'name.required' => 'Tên nhà cung cấp không được để trống.',
+            'contract_code.required' => 'Mã hợp đồng không được để trống.',
+            'contract_code.unique' => 'Mã hợp đồng này đã tồn tại trong hệ thống rồi.',
+            'contact_name.required' => 'Không được để trống tên người liên hệ.',
+            'contact_title.required' => 'Chức vụ người liên hệ không được bỏ trống.',
+            'phone.required' => 'Quên nhập số điện thoại kìa bro.',
+            'phone.regex' => 'Số điện thoại nhìn có vẻ sai sai, chỉ được nhập số (có thể chứa khoảng trắng hoặc dấu + -).',
+            'phone.min' => 'Số điện thoại phải có ít nhất 10 số.',
+            'email.required' => 'Email không được để trống.',
+            'email.email' => 'Định dạng Email sai rồi.',
         ]);
 
         $supplier->update($request->all());
@@ -326,6 +412,66 @@ class AdminController extends Controller
         return redirect()->route('admin.suppliers.index')->with('success', '🗑️ Đã xóa nhà cung cấp khỏi hệ thống!');
     }
 
+    public function suppliersImport($id)
+    {
+        $supplier = Supplier::findOrFail($id);
+        // Lấy tất cả sách ra để Admin chọn cuốn muốn nhập kho
+        $books = Book::orderBy('title', 'asc')->get();
+        return view('admin.suppliers.import', compact('supplier', 'books'));
+    }
+
+    public function suppliersImportStore(Request $request, $id)
+    {
+        $supplier = Supplier::findOrFail($id);
+
+        $request->validate([
+            'book_ids' => 'required|array|min:1',
+            'quantities' => 'required|array',
+            'import_prices' => 'required|array',
+            'note' => 'nullable|string',
+        ], [
+            'book_ids.required' => 'Vui lòng chọn ít nhất một cuốn sách để nhập kho.',
+        ]);
+
+        // Dùng Transaction để đảm bảo an toàn dữ liệu tuyệt đối
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $supplier) {
+            // 1. Tạo phiếu nhập tổng
+            $import = Import::create([
+                'supplier_id' => $supplier->id,
+                'user_id' => \Illuminate\Support\Facades\Auth::id(),
+                'total_amount' => 0, // Sẽ tính toán và update sau
+                'note' => $request->note,
+            ]);
+
+            $totalAmount = 0;
+
+            // 2. Duyệt qua từng dòng sách được chọn để lưu chi tiết và cộng kho
+            foreach ($request->book_ids as $index => $bookId) {
+                $qty = $request->quantities[$index];
+                $price = $request->import_prices[$index];
+                $subTotal = $qty * $price;
+                $totalAmount += $subTotal;
+
+                // Lưu vào bảng chi tiết phiếu nhập
+                ImportItem::create([
+                    'import_id' => $import->id,
+                    'book_id' => $bookId,
+                    'quantity' => $qty,
+                    'import_price' => $price,
+                ]);
+
+                // ĐẬP THẲNG VÀO KHO: Cộng dồn số lượng vào bảng books
+                $book = Book::findOrFail($bookId);
+                $book->increment('stock', $qty);
+            }
+
+            // 3. Cập nhật lại tổng tiền chính xác cho phiếu nhập
+            $import->update(['total_amount' => $totalAmount]);
+        });
+
+        return redirect()->route('admin.suppliers.index')->with('success', '🎉 Lập phiếu nhập kho thành công! Sách đã được tự động cộng thẳng vào kho hàng.');
+    }
+
     /* =========================================================================
      * 6. QUẢN LÝ ĐÁNH GIÁ (REVIEWS) - ĐÃ BỔ SUNG ĐẦY ĐỦ TẠI ĐÂY
      * ========================================================================= */
@@ -335,15 +481,17 @@ class AdminController extends Controller
         $pendingCount = Review::where('status', 'pending')->count();
         $avgRating = round(Review::where('status', 'approved')->avg('rating') ?? 0, 1);
         $violatedCount = Review::where('status', 'violated')->count();
-
+        $suspiciousCount = Review::where('status', 'suspicious')->count(); // Đếm ở đây rồi
+        
         $query = Review::with(['book', 'user']);
         
-        if ($request->has('tab') && in_array($request->tab, ['pending', 'approved', 'violated'])) {
+        if ($request->has('tab') && in_array($request->tab, ['pending', 'approved', 'violated', 'suspicious'])) {
             $query->where('status', $request->tab);
         }
 
         $reviews = $query->latest()->paginate(10);
-        return view('admin.reviews.index', compact('reviews', 'totalCount', 'pendingCount', 'avgRating', 'violatedCount'));
+        
+        return view('admin.reviews.index', compact('reviews', 'totalCount', 'pendingCount', 'avgRating', 'violatedCount', 'suspiciousCount'));
     }
 
     public function reviewsApprove($id)
@@ -375,6 +523,25 @@ class AdminController extends Controller
     {
         Review::findOrFail($id)->delete();
         return back()->with('success', '🗑️ Đã xóa vĩnh viễn đánh giá khỏi hệ thống!');
+    }
+
+    public function destroyAllViolated() {
+    Review::where('status', 'violated')->delete();
+    return redirect()->back()->with('success', 'Đã dọn dẹp sạch sẽ toàn bộ bình luận vi phạm!');
+    }
+
+    public function approveAllPending()
+    {
+        // Quét sạch những ông đang pending và chuyển thành approved
+        Review::where('status', 'pending')->update(['status' => 'approved']);
+        return back()->with('success', '🎉 Đã phê duyệt toàn bộ bình luận đang chờ duyệt thành công!');
+    }
+
+    public function approveAllSuspicious()
+    {
+        // Quét sạch những ông đang bị AI nghi vấn và chuyển thành approved
+        Review::where('status', 'suspicious')->update(['status' => 'approved']);
+        return back()->with('success', '🎉 Đã phê duyệt toàn bộ bình luận nghi vấn thành công!');
     }
 
     /* =========================================================================

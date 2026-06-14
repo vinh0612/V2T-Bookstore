@@ -40,7 +40,7 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Số điện thoại</label>
-                    <input type="text" name="phone" value="{{ $supplier->phone }}" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
+                    <input type="text" name="phone" value="{{ old('phone') }}" placeholder="0901234567" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" maxlength="10" pattern="^0[0-9]{9}$" oninvalid="this.setCustomValidity('Số điện thoại phải bắt đầu bằng số 0 và đủ 10 số nha bro!')" oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g, '')" required>
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Hòm thư Email</label>

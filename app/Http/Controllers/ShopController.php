@@ -21,21 +21,28 @@ class ShopController extends Controller
             $query->where('category_id', $request->category);
         }
 
-        // BỘ LỌC 2: Tìm kiếm theo từ khóa (?search=từ_khóa)
+        // BỘ LỌC 2: Tìm kiếm thông minh
         if ($request->has('search') && $request->search != '') {
             $searchTerm = $request->search;
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('title', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('author', 'like', '%' . $searchTerm . '%');
+            
+            $keywords = explode(' ', preg_replace('/\s+/', ' ', trim($searchTerm)));
+
+            $query->where(function($q) use ($keywords) {
+                foreach ($keywords as $word) {
+                    $q->where(function($subQ) use ($word) {
+                        $subQ->where('title', 'like', '%' . $word . '%')
+                             ->orWhere('author', 'like', '%' . $word . '%');
+                    });
+                }
             });
         }
 
-        // BỘ LỌC 3: Lọc theo Tác giả động (?author=Tên_Tác_Giả)
+        // BỘ LỌC 3: Lọc theo Tác giả động
         if ($request->has('author') && $request->author != '') {
             $query->where('author', $request->author);
         }
 
-        // BỘ LỌC 4: Sắp xếp động (?sort=loại_sắp_xếp)
+        // BỘ LỌC 4: Sắp xếp động 
         $sortType = $request->input('sort', 'newest'); // Mặc định là sách mới nhất
         if ($sortType == 'price_asc') {
             $query->orderBy('price', 'asc');   // Giá tăng dần

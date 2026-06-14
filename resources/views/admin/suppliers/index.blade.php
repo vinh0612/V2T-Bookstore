@@ -24,7 +24,8 @@
     <div style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start;">
         <div>
             <p style="font-size: 0.8rem; color: #6b7280; margin: 0 0 6px 0; font-weight: 500;">Hệ thống &gt; <span style="color: #92400e;">Đối tác &amp; Nhà cung cấp</span></p>
-            <h1 style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 1.8rem; font-weight: 700; color: #1e3e36; margin: 0 0 8px 0;">Danh mục Nhà cung cấp</h1>            <p style="color: #6b7280; font-size: 0.9rem; margin: 0; max-width: 600px; line-height: 1.5;">Theo dõi và quản lý mối quan hệ với các nhà xuất bản và đối tác cung ứng sách.</p>
+            <h1 style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 1.8rem; font-weight: 700; color: #1e3e36; margin: 0 0 8px 0;">Danh mục Nhà cung cấp</h1>
+            <p style="color: #6b7280; font-size: 0.9rem; margin: 0; max-width: 600px; line-height: 1.5;">Theo dõi và quản lý mối quan hệ với các nhà xuất bản và đối tác cung ứng sách.</p>
         </div>
         <a href="{{ route('admin.suppliers.create') }}" style="padding: 10px 20px; background: #1e3e36; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-decoration: none;">
             <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -73,7 +74,7 @@
             <tbody>
                 @forelse($suppliers as $supplier)
                 @php
-                    // Sử dụng mb_substr để tránh lỗi font chữ tiếng Việt có dấu (?N thành ĐN)
+                    // Sử dụng mb_substr để tránh lỗi font chữ tiếng Việt có dấu
                     $words = explode(' ', $supplier->name);
                     if (count($words) > 1) {
                         $initials = mb_substr($words[0], 0, 1) . mb_substr($words[1], 0, 1);
@@ -107,6 +108,16 @@
                     </td>
                     <td style="text-align: center;">
                         <div style="display: inline-flex; gap: 4px; align-items: center;">
+                            
+                            {{-- ĐÃ GHÉP THÀNH CÔNG NÚT NHẬP KHO (MÀU XANH DƯƠNG) VÀO ĐÂY --}}
+                            <a href="{{ route('admin.suppliers.import', $supplier->id) }}" class="btn-action-round" style="color: #0284c7;" title="Lập phiếu nhập kho sách">
+                                <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM19.5 18.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 5.25h16.5l1.05 7.5h2.25v5.25H2.25V5.25Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 5.25V12.75" />
+                                </svg>
+                            </a>
+
                             <a href="{{ route('admin.suppliers.edit', $supplier->id) }}" class="btn-action-round" title="Chỉnh sửa thông tin">
                                 <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />

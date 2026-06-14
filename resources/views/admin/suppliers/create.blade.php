@@ -13,44 +13,56 @@
 
         <form action="{{ route('admin.suppliers.store') }}" method="POST">
             @csrf
+
+            @if ($errors->any())
+                <div style="background-color: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 12px 20px; border-radius: 8px; margin-bottom: 24px;">
+                    <strong style="font-size: 0.875rem;">⚠️ Vui lòng kiểm tra lại:</strong>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px; font-size: 0.8rem;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Tên nhà cung cấp</label>
-                    <input type="text" name="name" placeholder="Ví dụ: Nhà xuất bản Trẻ" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Tên nhà cung cấp <span style="color: #dc2626;">*</span></label>
+                    <input type="text" name="name" value="{{ old('name') }}" placeholder="Ví dụ: Nhà xuất bản Trẻ" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Mã hợp đồng</label>
-                    <input type="text" name="contract_code" placeholder="Ví dụ: #TR-2023-01" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Mã hợp đồng <span style="color: #dc2626;">*</span></label>
+                    <input type="text" name="contract_code" value="{{ old('contract_code') }}" placeholder="Ví dụ: #TR-2023-01" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Người đại diện liên hệ</label>
-                    <input type="text" name="contact_name" placeholder="Nguyễn Văn A" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Người đại diện liên hệ <span style="color: #dc2626;">*</span></label>
+                    <input type="text" name="contact_name" value="{{ old('contact_name') }}" placeholder="Nguyễn Văn A" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Chức vụ</label>
-                    <input type="text" name="contact_title" placeholder="Giám đốc kinh doanh" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Chức vụ <span style="color: #dc2626;">*</span></label>
+                    <input type="text" name="contact_title" value="{{ old('contact_title') }}" placeholder="Giám đốc kinh doanh" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Số điện thoại</label>
-                    <input type="text" name="phone" placeholder="090 123 4567" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Số điện thoại <span style="color: #dc2626;">*</span></label>
+                    <input type="text" name="phone" value="{{ old('phone') }}" placeholder="0901234567" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" maxlength="10" pattern="^0[0-9]{9}$" oninvalid="this.setCustomValidity('Số điện thoại phải bắt đầu bằng số 0 và đủ 10 số nha bro!')" oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g, '')" required>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Hòm thư Email</label>
-                    <input type="email" name="email" placeholder="doi_tac@domain.com" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Hòm thư Email <span style="color: #dc2626;">*</span></label>
+                    <input type="email" name="email" value="{{ old('email') }}" placeholder="doi_tac@domain.com" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;" required>
                 </div>
             </div>
 
             <div style="margin-bottom: 24px;">
                 <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #4b5563; margin-bottom: 6px;">Trạng thái hợp tác ban đầu</label>
                 <select name="status" style="width: 100%; padding: 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;">
-                    <option value="active">Đang hoạt động bình thường</option>
-                    <option value="paused">Tạm dừng hợp tác</option>
+                    <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Đang hoạt động bình thường</option>
+                    <option value="paused" {{ old('status') == 'paused' ? 'selected' : '' }}>Tạm dừng hợp tác</option>
                 </select>
             </div>
 

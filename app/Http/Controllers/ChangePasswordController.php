@@ -14,12 +14,13 @@ class ChangePasswordController extends Controller
     {
         $request->validate([
             'current_password' => 'required',
-            'new_password' => 'required|string|min:8|confirmed',
+            'new_password' => 'required|string|min:8|confirmed|different:current_password',
         ], [
             'current_password.required' => 'Vui lòng nhập mật khẩu hiện tại.',
             'new_password.required' => 'Vui lòng điền mật khẩu mới.',
-            'new_password.min' => 'Mật khẩu mới phải dài từ 8 ký tự trở lên nha bạn.',
-            'new_password.confirmed' => 'Xác nhận mật khẩu mới nhập lại chưa khớp kìa bạn.'
+            'new_password.min' => 'Mật khẩu mới phải dài từ 8 ký tự trở lên.',
+            'new_password.confirmed' => 'Xác nhận mật khẩu mới nhập lại chưa khớp.',
+            'new_password.different' => 'Mật khẩu mới phải khác với mật khẩu hiện tại.'
         ]);
 
         $user = User::findOrFail(Auth::id());

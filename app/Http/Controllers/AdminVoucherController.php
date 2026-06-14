@@ -55,9 +55,29 @@ class AdminVoucherController extends Controller
             'name' => 'required|max:255',
             'type' => 'required|in:percentage,fixed',
             'value' => 'required|numeric|min:0',
-            'start_date' => 'nullable|date',
+            'start_date' => 'nullable|date|after_or_equal:today',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'max_uses' => 'nullable|integer|min:0',
+            'min_order_value' => 'nullable|numeric|min:0',
+        ], [
+            'code.required' => 'Mã giảm giá không được để trống.',
+            'code.unique' => 'Mã giảm giá này đã tồn tại trong hệ thống rồi.',
+            'code.max' => 'Mã giảm giá không được dài quá 50 ký tự.',
+            'name.required' => 'Tên chương trình không được để trống.',
+            'name.max' => 'Tên chương trình không được dài quá 255 ký tự.',
+            'type.required' => 'Loại giảm giá là bắt buộc.',
+            'type.in' => 'Loại giảm giá phải là phần trăm hoặc cố định.',
+            'value.required' => 'Giá trị giảm không được để trống.',
+            'value.numeric' => 'Giá trị giảm phải là một số.',
+            'value.min' => 'Giá trị giảm phải lớn hơn hoặc bằng 0.',
+            'start_date.date' => 'Ngày bắt đầu phải là một ngày hợp lệ.',
+            'start_date.after_or_equal' => 'Ngày bắt đầu phải là ngày hôm nay hoặc sau đó.',
+            'end_date.date' => 'Ngày kết thúc phải là một ngày hợp lệ.',
+            'end_date.after_or_equal' => 'Ngày kết thúc phải là ngày bắt đầu hoặc sau đó.',
+            'max_uses.integer' => 'Giới hạn lượt dùng phải là một số nguyên.',
+            'max_uses.min' => 'Giới hạn lượt dùng phải lớn hơn hoặc bằng 0.',
+            'min_order_value.numeric' => 'Giá trị đơn hàng tối thiểu phải là một số.',
+            'min_order_value.min' => 'Giá trị đơn hàng tối thiểu phải lớn hơn hoặc bằng 0.',
         ]);
 
         // Lưu dữ liệu vào Database
@@ -71,13 +91,14 @@ class AdminVoucherController extends Controller
             'max_uses' => $request->max_uses ?? 0,
             'uses' => 0,
             'status' => 'active',
+            'min_order_value' => $request->min_order_value ?? 0,
         ]);
-
+        
         // Quay lại kèm thông báo thành công
         return redirect()->back()->with('success', 'Đã tạo mã giảm giá mới thành công!');
     }
 
-    // 1. Hàm cập nhật thông tin mã giảm giá (Update)
+    // 1. Hàm cập nhật thông tin mã giảm giá
     public function update(Request $request, $id)
     {
         $voucher = Voucher::findOrFail($id);
@@ -87,9 +108,29 @@ class AdminVoucherController extends Controller
             'name' => 'required|max:255',
             'type' => 'required|in:percentage,fixed',
             'value' => 'required|numeric|min:0',
-            'start_date' => 'nullable|date',
+            'start_date' => 'nullable|date|after_or_equal:today', 
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'max_uses' => 'nullable|integer|min:0',
+            'min_order_value' => 'nullable|numeric|min:0',
+        ], [
+            'code.required' => 'Mã giảm giá không được để trống.',
+            'code.unique' => 'Mã giảm giá này đã tồn tại trong hệ thống rồi.',
+            'code.max' => 'Mã giảm giá không được dài quá 50 ký tự.',
+            'name.required' => 'Tên chương trình không được để trống.',
+            'name.max' => 'Tên chương trình không được dài quá 255 ký tự.',
+            'type.required' => 'Loại giảm giá là bắt buộc.',
+            'type.in' => 'Loại giảm giá phải là phần trăm hoặc cố định.',
+            'value.required' => 'Giá trị giảm không được để trống.',
+            'value.numeric' => 'Giá trị giảm phải là một số.',
+            'value.min' => 'Giá trị giảm phải lớn hơn hoặc bằng 0.',
+            'start_date.date' => 'Ngày bắt đầu phải là một ngày hợp lệ.',
+            'start_date.after_or_equal' => 'Ngày bắt đầu phải là ngày hôm nay hoặc sau đó.',
+            'end_date.date' => 'Ngày kết thúc phải là một ngày hợp lệ.',
+            'end_date.after_or_equal' => 'Ngày kết thúc phải là ngày bắt đầu hoặc sau đó.',
+            'max_uses.integer' => 'Giới hạn lượt dùng phải là một số nguyên.',
+            'max_uses.min' => 'Giới hạn lượt dùng phải lớn hơn hoặc bằng 0.',
+            'min_order_value.numeric' => 'Giá trị đơn hàng tối thiểu phải là một số.',
+            'min_order_value.min' => 'Giá trị đơn hàng tối thiểu phải lớn hơn hoặc bằng 0.',
         ]);
 
         $voucher->update([
@@ -100,6 +141,7 @@ class AdminVoucherController extends Controller
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'max_uses' => $request->max_uses ?? 0,
+            'min_order_value' => $request->min_order_value ?? 0, // ĐÃ BỔ SUNG DÒNG NÀY CHO BRO
         ]);
 
         return redirect()->back()->with('success', 'Đã cập nhật thông tin mã giảm giá thành công!');

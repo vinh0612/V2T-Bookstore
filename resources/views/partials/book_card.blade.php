@@ -1,6 +1,5 @@
 <div class="group relative flex flex-col bg-white p-4 rounded-lg shadow-sm border border-gray-150 hover:shadow-md transition">
     
-    <!-- Nút Yêu thích (Wishlist Heart Icon) -->
     <form action="{{ route('wishlist.toggle', $book->id) }}" method="POST" class="absolute top-6 right-6 z-10">
         @csrf
         <button type="submit" class="w-8 h-8 bg-white hover:bg-red-50 rounded-full flex items-center justify-center shadow-sm border border-gray-100 transition focus:outline-none cursor-pointer" title="Yêu thích">
@@ -16,12 +15,10 @@
         </button>
     </form>
 
-    <!-- Ảnh bìa sách -->
     <a href="{{ route('books.show', $book->id) }}" class="relative h-64 mb-4 overflow-hidden rounded bg-gray-50 block">
         <img src="{{ $book->image_url }}" alt="{{ $book->title }}" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
     </a>
     
-    <!-- Nhãn & Rating -->
     <div class="flex items-center justify-between gap-2 mb-2 text-[10px] font-bold tracking-wider uppercase">
         <span @style(['color' => $tagColor ?? '#047857'])>{{ $tag ?? 'SÁCH' }}</span>
 
@@ -32,23 +29,19 @@
         @endif
     </div>
     
-    <!-- Tiêu đề sách -->
     <h3 class="font-serif font-bold text-lg text-gray-900 leading-tight mb-1 hover:text-[var(--color-v2t-green)] transition">
         <a href="{{ route('books.show', $book->id) }}">{{ $book->title }}</a>
     </h3>
     
-    <!-- Tác giả -->
     <p class="text-sm text-gray-650 italic mb-4">bởi {{ $book->author }}</p>
     
-    <!-- Giá & Giỏ hàng -->
     <div class="mt-auto flex items-center justify-between">
         <span class="font-bold text-[var(--color-v2t-green)]">{{ number_format($book->price, 0, ',', '.') }}đ</span>
         
-        <form action="{{ route('cart.add', $book->id) }}" method="POST">
-            @csrf
-            <button type="submit" class="bg-[var(--color-v2t-bg)] text-[var(--color-v2t-green)] border border-[var(--color-v2t-green)] hover:bg-[var(--color-v2t-green)] hover:text-white text-xs px-4 py-2 rounded transition font-medium cursor-pointer">
-                Thêm
-            </button>
-        </form>
+        <button type="button" 
+                onclick="addToCart(event, {{ $book->id }})" 
+                class="bg-[var(--color-v2t-bg)] text-[var(--color-v2t-green)] border border-[var(--color-v2t-green)] hover:bg-[var(--color-v2t-green)] hover:text-white text-xs px-4 py-2 rounded transition font-medium cursor-pointer flex items-center gap-1">
+            Thêm
+        </button>
     </div>
 </div>

@@ -115,7 +115,7 @@
                         @auth
                             @if($recentOrders->count() > 0)
                                 @foreach($recentOrders as $order)
-                                    <div style="padding: 12px 16px; border-bottom: 1px solid #f9fafb; display: flex; gap: 10px; align-items: flex-start; transition: background 0.15s; cursor: default;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                                    <a href="{{ route('orders.show', $order->id) }}" style="padding: 12px 16px; border-bottom: 1px solid #f9fafb; display: flex; gap: 10px; align-items: flex-start; transition: background 0.15s; cursor: pointer; text-decoration: none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
                                         <span style="font-size: 1.25rem; flex-shrink: 0;">
                                             @if($order->status == 'completed') ✅
                                             @elseif($order->status == 'processing') 🔄
@@ -138,7 +138,7 @@
                                             </p>
                                             <p style="font-size: 0.6875rem; color: #9ca3af; margin: 0;">{{ number_format($order->total_price, 0, ',', '.') }}đ · {{ $order->created_at->diffForHumans() }}</p>
                                         </div>
-                                    </div>
+                                    </a>
                                 @endforeach
                             @else
                                 <div style="padding: 32px 16px; text-align: center;">
@@ -157,7 +157,7 @@
             
             <a href="{{ route('cart.index') }}" class="flex flex-col items-center cursor-pointer text-gray-600 hover:text-v2t-green transition relative" style="text-decoration: none;">
                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                <span class="absolute top-0 right-0 -mt-1 -mr-3 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+                <span id="cart-count" class="absolute top-0 right-0 -mt-1 -mr-3 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
                     {{ count(session('cart', [])) }}
                 </span>
                 <span class="text-[11px] font-medium">Giỏ Hàng</span>

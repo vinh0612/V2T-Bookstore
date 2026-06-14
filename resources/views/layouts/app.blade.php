@@ -23,6 +23,116 @@
     </main>
 
     @include('partials.footer')
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<script>
+    // Hàm 1: Thêm nhanh ở trang chủ / cửa hàng
+    function addToCart(event, bookId) {
+        event.preventDefault(); 
+        
+        const button = event.currentTarget;
+        const originalText = button.innerHTML;
+        button.innerHTML = '⏳ Đang thêm...';
+        button.disabled = true;
+
+        fetch(`/cart/add/${bookId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json()) // ĐÃ FIX: Yêu cầu dịch ra JSON
+        .then(data => {
+            if (data.success) {
+                // ĐÃ FIX: Cập nhật con số thật từ Server
+                const cartBadge = document.getElementById('cart-count');
+                if (cartBadge) {
+                    cartBadge.innerText = data.cart_count;
+                    // Hiệu ứng giật nhẹ cho đẹp mắt
+                    cartBadge.classList.add('animate-bounce');
+                    setTimeout(() => cartBadge.classList.remove('animate-bounce'), 1000);
+                }
+                
+                Toastify({
+                    text: "✅ Đã thêm sách vào giỏ hàng!",
+                    duration: 3000,
+                    gravity: "top", 
+                    position: "right", 
+                    style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                }).showToast();
+            } else {
+                Toastify({
+                    text: "❌ Lỗi: " + (data.message || "Không thể thêm sách."),
+                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                }).showToast();
+            }
+        })
+        .catch(error => console.error('Lỗi:', error))
+        .finally(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+
+    // Hàm 2: Thêm kèm số lượng ở trang chi tiết
+    function addDetailToCart(event, bookId) {
+        event.preventDefault(); 
+        
+        const button = event.currentTarget;
+        const originalText = button.innerHTML;
+        
+        const qtyInput = document.getElementById('book-qty');
+        const quantity = qtyInput ? qtyInput.value : 1;
+
+        button.innerHTML = '⏳ Đang thêm...';
+        button.disabled = true;
+
+        fetch(`/cart/add/${bookId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ quantity: quantity })
+        })
+        .then(response => response.json()) // ĐÃ FIX: Yêu cầu dịch ra JSON
+        .then(data => {
+            if (data.success) {
+                // ĐÃ FIX: Cập nhật con số thật từ Server
+                const cartBadge = document.getElementById('cart-count');
+                if (cartBadge) {
+                    cartBadge.innerText = data.cart_count;
+                    cartBadge.classList.add('animate-bounce');
+                    setTimeout(() => cartBadge.classList.remove('animate-bounce'), 1000);
+                }
+
+                Toastify({
+                    text: `✅ Đã thêm ${quantity} cuốn vào giỏ!`,
+                    duration: 3000,
+                    gravity: "top", 
+                    position: "right",
+                    style: { background: "linear-gradient(to right, #00b09b, #96c93d)" }
+                }).showToast();
+            } else {
+                Toastify({
+                    text: "❌ Lỗi: " + (data.message || "Kho không đủ."),
+                    style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" }
+                }).showToast();
+            }
+        })
+        .catch(error => console.error('Lỗi:', error))
+        .finally(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+</script>
     
 </body>
 </html>

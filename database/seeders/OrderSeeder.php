@@ -29,7 +29,7 @@ class OrderSeeder extends Seeder
                     'id' => 2,
                     'user_id' => $userA->id,
                     'total_price' => 280000,
-                    'status' => 'shipping',
+                    'status' => 'processing',
                     'phone' => '0901234567',
                     'shipping_address' => '280 An Dương Vương, Quận 5, TP.HCM',
                     'payment_method' => 'cod',
