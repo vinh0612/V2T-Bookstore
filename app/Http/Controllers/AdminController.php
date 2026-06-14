@@ -289,6 +289,12 @@ class AdminController extends Controller
     public function toggleUserStatus($id)
     {
         $user = User::findOrFail($id);
+
+        // LỚP BẢO VỆ 1: Chặn đứng ý đồ khóa tài khoản Admin
+        if ($user->role === 'admin') {
+            return back()->with('error', '⛔ Cảnh báo: Bạn không có quyền khóa tài khoản Quản trị viên!');
+        }
+
         $user->status = $user->status == 'active' ? 'blocked' : 'active';
         $user->save();
         return back()->with('success', 'Đã cập nhật trạng thái tài khoản người dùng thành công!');
@@ -300,6 +306,21 @@ class AdminController extends Controller
         $orderCount = Order::where('user_id', $id)->count();
         $totalSpent = Order::where('user_id', $id)->where('status', 'completed')->sum('total_price');
         return view('admin.users_show', compact('user', 'orderCount', 'totalSpent'));
+    }
+
+    // HÀM MỚI: Xử lý xóa người dùng
+    public function usersDestroy($id)
+    {
+        $user = User::findOrFail($id);
+
+        // LỚP BẢO VỆ 2: Chặn đứng ý đồ xóa tài khoản Admin
+        if ($user->role === 'admin') {
+            return back()->with('error', '⛔ Cảnh báo: Tài khoản Quản trị viên được bảo vệ tuyệt đối, không thể xóa!');
+        }
+
+        $user->delete();
+
+        return back()->with('success', '🗑️ Đã xóa vĩnh viễn tài khoản người dùng khỏi hệ thống!');
     }
 
     /* =========================================================================

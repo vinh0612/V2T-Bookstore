@@ -83,6 +83,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/users', [AdminController::class, 'usersIndex'])->name('admin.users.index');
         Route::post('/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggleStatus');
         Route::get('/users/{id}', [AdminController::class, 'usersShow'])->name('admin.users.show');
+        Route::delete('/users/{id}', [AdminController::class, 'usersDestroy'])->name('admin.users.destroy');
 
         // Quản lý nhà cung cấp (Đầy đủ chức năng)
         Route::get('/suppliers', [AdminController::class, 'suppliersIndex'])->name('admin.suppliers.index');

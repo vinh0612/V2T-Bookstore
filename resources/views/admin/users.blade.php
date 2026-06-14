@@ -31,6 +31,10 @@
     .btn-lock-active:hover { background: #fee2e2; color: #dc2626; }
     .btn-lock-blocked { color: #dc2626; background: #fee2e2; }
     .btn-lock-blocked:hover { background: #fca5a5; color: #991b1b; }
+
+    /* Nút xóa tài khoản */
+    .btn-delete { color: #9ca3af; }
+    .btn-delete:hover { background: #fee2e2; color: #dc2626; }
 </style>
 
 <div style="width: 100%;">
@@ -103,6 +107,7 @@
                     
                     <td style="text-align: center;">
                         <div style="display: inline-flex; align-items: center; gap: 8px;">
+                            {{-- Nút xem chi tiết (Ai cũng xem được) --}}
                             <a href="{{ route('admin.users.show', $user->id) }}" class="action-btn" title="Xem chi tiết hồ sơ">
                                 <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -110,20 +115,33 @@
                                 </svg>
                             </a>
                             
-                            <form action="{{ route('admin.users.toggleStatus', $user->id) }}" method="POST" style="margin: 0; display: inline;">
-                                @csrf
-                                <button type="submit" class="action-btn {{ $user->status === 'active' ? 'btn-lock-active' : 'btn-lock-blocked' }}" title="{{ $user->status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản' }}">
-                                    @if($user->status === 'active')
-                                        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                                        </svg>
-                                    @else
-                                        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                                        </svg>
-                                    @endif
-                                </button>
-                            </form>
+                            {{-- NẾU LÀ KHÁCH HÀNG THƯỜNG -> HIỆN NÚT KHÓA & XÓA --}}
+                            @if($user->role !== 'admin')
+                                <form action="{{ route('admin.users.toggleStatus', $user->id) }}" method="POST" style="margin: 0; display: inline;">
+                                    @csrf
+                                    <button type="submit" class="action-btn {{ $user->status === 'active' ? 'btn-lock-active' : 'btn-lock-blocked' }}" title="{{ $user->status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản' }}">
+                                        @if($user->status === 'active')
+                                            <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                                        @else
+                                            <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                                        @endif
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="margin: 0; display: inline;" onsubmit="return confirm('Cảnh báo: Bro có chắc chắn muốn xóa vĩnh viễn tài khoản này không? Mọi dữ liệu đơn hàng liên quan có thể bị ảnh hưởng!');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="action-btn btn-delete" title="Xóa tài khoản">
+                                        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                                    </button>
+                                </form>
+                            
+                            {{-- NẾU LÀ ADMIN -> HIỆN KHIÊN BẢO VỆ --}}
+                            @else
+                                <span title="Tài khoản Admin được bảo vệ tuyệt đối" style="color: #fbbf24; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;">
+                                    <svg style="width: 20px; height: 20px;" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.209 11.209 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 00.374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 00-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08zm3.094 8.016a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" /></svg>
+                                </span>
+                            @endif
                         </div>
                     </td>
                 </tr>

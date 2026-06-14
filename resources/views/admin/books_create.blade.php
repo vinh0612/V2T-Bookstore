@@ -57,6 +57,17 @@
         <form action="{{ route('admin.books.store') }}" method="POST">
             @csrf
 
+            @if ($errors->any())
+                <div style="background-color: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; padding: 12px 20px; border-radius: 8px; margin-bottom: 24px;">
+                    <strong style="font-size: 0.875rem;">⚠️ Vui lòng kiểm tra lại:</strong>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px; font-size: 0.8rem;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            
             <div class="v2t-form-group">
                 <label class="v2t-form-label">Tiêu đề sách <span style="color: #dc2626;">*</span></label>
                 <input type="text" name="title" value="{{ old('title') }}" class="v2t-form-input" placeholder="Ví dụ: Đắc Nhân Tâm" required>
