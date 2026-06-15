@@ -1,4 +1,4 @@
-<header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+<header class="bg-white border-b border-gray-200 lg:sticky top-0 z-50 shadow-sm relative">
     <div class="container mx-auto px-2 md:px-4 flex items-center justify-between gap-2 md:gap-8 h-16">
         
         {{-- Khối Bên Trái: Nút Hamburger (Mobile) + Logo --}}
