@@ -6,10 +6,14 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+
+//API của Google để gửi mail
+use Google\Client as GoogleClient;
+use Google\Service\Gmail as GoogleGmail;
+use Google\Service\Gmail\Message as GmailMessage;
 
 class RegisterController extends Controller
 {
@@ -41,7 +45,7 @@ class RegisterController extends Controller
         // Tạo mã OTP 6 số ngẫu nhiên
         $otp = rand(100000, 999999);
 
-        // Lưu thông tin vào Session (cho phép sống trong 15 phút)
+        // Lưu thông tin vào Session (cho phép tồn tại trong 15 phút)
         Session::put('register_data', [
             'name' => $request->name,
             'email' => $request->email,
@@ -50,19 +54,59 @@ class RegisterController extends Controller
             'expires_at' => now()->addMinutes(15)
         ]);
 
-        // Gửi Mail chứa mã OTP (Bọc Try-Catch để lỡ chưa setup Mail thì web không bị sập)
+        //Gửi mail OTP bằng Google API 
         try {
-            Mail::raw("Chào {$request->name},\n\nMã xác thực OTP đăng ký tài khoản tại V2T Bookstore của bạn là: {$otp}.\n\nMã này sẽ hết hạn sau 15 phút. Tuyệt đối không chia sẻ mã này cho bất kỳ ai.", function ($message) use ($request) {
-                $message->to($request->email)
-                        ->subject('Mã xác thực đăng ký - V2T Bookstore');
-            });
+            $client = new GoogleClient();
+            $client->setClientId(env('GMAIL_CLIENT_ID'));
+            $client->setClientSecret(env('GMAIL_CLIENT_SECRET'));
+            $client->refreshToken(env('GMAIL_REFRESH_TOKEN'));
+            
+            $gmailService = new GoogleGmail($client);
+
+            $toEmail = $request->email;
+            $subject = "Mã xác nhận tài khoản V2T Bookstore";
+            
+            // Format mail chuẩn HTML không bị vỡ font
+            $mailContent = "To: $toEmail\r\n";
+            $mailContent .= "Subject: =?utf-8?B?" . base64_encode($subject) . "?=\r\n";
+            $mailContent .= "MIME-Version: 1.0\r\n";
+            $mailContent .= "Content-Type: text/html; charset=utf-8\r\n\r\n";
+            $mailContent .= '
+                <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; background-color: #f9fafb; border-radius: 8px;">
+                    <h2 style="color: #1e3e36; margin-bottom: 5px;">V2T BOOKSTORE</h2>
+                    <p style="color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">Xác thực tài khoản</p>
+                    <div style="background-color: white; padding: 30px; border-radius: 8px; margin-top: 20px; border: 1px solid #e5e7eb; display: inline-block;">
+                        <p style="color: #374151; font-size: 16px;">Chào <strong>' . $request->name . '</strong>, Mã OTP của bạn là:</p>
+                        <p style="font-size: 36px; font-weight: bold; color: #1e3e36; letter-spacing: 5px; margin: 15px 0;">' . $otp . '</p>
+                        <p style="color: #9ca3af; font-size: 12px;">Mã này sẽ hết hạn sau 15 phút. Tuyệt đối không chia sẻ cho người khác.</p>
+                    </div>
+                </div>
+            ';
+
+            // Base64URL encode theo đúng luật của Google
+            $mimeMessage = rtrim(strtr(base64_encode($mailContent), '+/', '-_'), '=');
+            
+            $message = new GmailMessage();
+            $message->setRaw($mimeMessage);
+
+            // Bấm nút phóng thư
+            $gmailService->users_messages->send('me', $message);
+
         } catch (\Exception $e) {
-            // Mẹo cho Dev: Nếu XAMPP chưa gửi được mail, mở file laravel.log ra coi mã OTP luôn!
-            Log::error("Lỗi gửi mail OTP: " . $e->getMessage());
+            // Lỡ Token bị hết hạn hay rớt mạng, web vẫn không sập, vẫn ghi Log để bro soi lại
+            Log::error("Lỗi gửi mail OTP Google API: " . $e->getMessage());
             Log::info("🔴 [DEV-MODE] Mã OTP dành cho {$request->email} là: {$otp}");
+            
+            // Xóa session vì mail lỗi không gửi được, bắt người dùng thử lại
+            Session::forget('register_data');
+            
+            return response()->json([
+                'success' => false,
+                'errors' => ['Lỗi hệ thống gửi mail. Vui lòng thử lại sau!']
+            ]);
         }
 
-        // Báo cho giao diện (JS) biết là gửi thành công
+        // Báo cho giao diện biết là gửi thành công
         return response()->json(['success' => true]);
     }
 
@@ -103,7 +147,7 @@ class RegisterController extends Controller
             ]);
         }
 
-        // Mọi thứ qua cửa trót lọt -> Nhét thẳng vào Database
+        // Thành công -> Đưa vào Database
         $user = User::create([
             'name' => $registerData['name'],
             'email' => $registerData['email'],
