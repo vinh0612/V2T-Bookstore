@@ -1,7 +1,10 @@
+# Xài bản PHP 8.2 kèm Apache làm máy chủ web
 FROM php:8.2-apache
 
-# Cài đặt các thư viện cần thiết cho Laravel và MySQL
-RUN apt-get update && apt-get install -y \
+# Cài đặt Node.js (cần thiết để build giao diện Vite) và các thư viện PHP
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get update && apt-get install -y \
+    nodejs \
     libzip-dev \
     zip \
     unzip \
@@ -11,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 # Bật mod_rewrite để Laravel điều hướng được link
 RUN a2enmod rewrite
 
-# Chỉ định thư mục gốc là /public (Thay vì /var/www/html mặc định)
+# Chỉ định thư mục gốc là /public
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
@@ -22,8 +25,13 @@ COPY . .
 
 # Cài đặt Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-# Chạy composer install để tải thư viện
 RUN composer install --no-dev --optimize-autoloader
 
-# Phân quyền cho Laravel ghi file log và cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Cài đặt NPM và build file CSS/JS của Vite
+# Xóa sạch tàn dư của Windows trước khi cài để ép nó tải bản dành cho Linux
+RUN rm -rf node_modules package-lock.json
+RUN npm install
+RUN npm run build
+
+# Phân quyền cho Laravel ghi file log, cache và build
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public/build
