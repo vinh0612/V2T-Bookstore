@@ -28,6 +28,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
 # Cài đặt NPM và build file CSS/JS của Vite
+# Xóa sạch tàn dư của Windows trước khi cài để ép nó tải bản dành cho Linux
+RUN rm -rf node_modules package-lock.json
 RUN npm install
 RUN npm run build
 
